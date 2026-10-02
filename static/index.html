@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Identificador — Reconhecimento Facial</title>
+  <meta name="description" content="Identifique usuários cadastrados a partir de uma foto, com privacidade em primeiro lugar." />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="#hero">Identificador</a>
+      <nav class="nav">
+        <a href="#como-funciona">Como funciona</a>
+        <a href="#app">Testar</a>
+        <a href="#privacidade">Privacidade</a>
+      </nav>
+    </div>
+  </header>
+
+  <section id="hero" class="hero">
+    <div class="container hero-inner">
+      <div class="hero-text">
+        <span class="badge">Biometria com privacidade</span>
+        <h1>Identifique quem você é <span class="gradient">em segundos</span></h1>
+        <p class="subtitle">
+          Faça o cadastro com uma foto e depois seja reconhecido automaticamente.
+          Apenas o vetor facial é armazenado — nunca a sua foto.
+        </p>
+        <a href="#app" class="btn btn-primary">Identificar agora</a>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="scan-card">
+          <div class="scan-ring"></div>
+          <div class="scan-line"></div>
+          <div class="scan-face">&#128100;</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="como-funciona" class="section">
+    <div class="container">
+      <h2 class="section-title">Como funciona</h2>
+      <p class="section-subtitle">Três passos simples, do cadastro ao reconhecimento.</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h3>Cadastre-se</h3>
+          <p>Envie uma foto com seu rosto e informe seu nome, autorizando o uso do dado biométrico.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h3>Extraímos o vetor</h3>
+          <p>Um embedding de 128 dimensões é gerado a partir do seu rosto. A foto original é descartada.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h3>Reconhecemos</h3>
+          <p>Envie uma nova foto e comparamos com os vetores salvos para dizer quem você é.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="app" class="section section-app">
+    <div class="container">
+      <h2 class="section-title">Experimente agora</h2>
+      <p class="section-subtitle">Use a câmera ou envie uma imagem do seu dispositivo.</p>
+
+      <div class="panel">
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-tab="identify" role="tab" aria-selected="true">Identificar</button>
+          <button class="tab" data-tab="register" role="tab" aria-selected="false">Cadastrar</button>
+        </div>
+
+        <div id="tab-identify" class="tab-pane active">
+          <form id="identify-form" class="form">
+            <div class="capture-box">
+              <video id="video" autoplay playsinline muted></video>
+              <canvas id="canvas" hidden></canvas>
+              <img id="preview" class="preview hidden" alt="Pré-visualização da imagem" />
+              <div id="camera-placeholder" class="camera-placeholder">
+                <span>&#128247;</span>
+                <p>Ative a câmera ou envie um arquivo</p>
+              </div>
+            </div>
+
+            <div class="controls">
+              <button type="button" id="camera-toggle" class="btn btn-outline">Ativar câmera</button>
+              <label class="btn btn-outline file-btn">
+                Enviar arquivo
+                <input type="file" id="identify-file" accept="image/*" hidden />
+              </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" id="identify-submit" disabled>
+              Identificar rosto
+            </button>
+            <p id="identify-status" class="status" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+
+        <div id="tab-register" class="tab-pane">
+          <form id="register-form" class="form">
+            <label class="field">
+              <span>Nome</span>
+              <input type="text" id="nome" name="nome" placeholder="Seu nome completo" required />
+            </label>
+
+            <div class="capture-box">
+              <video id="register-video" autoplay playsinline muted></video>
+              <canvas id="register-canvas" hidden></canvas>
+              <img id="register-preview" class="preview hidden" alt="Pré-visualização da imagem" />
+              <div id="register-camera-placeholder" class="camera-placeholder">
+                <span>&#128247;</span>
+                <p>Ative a câmera ou envie um arquivo</p>
+              </div>
+            </div>
+
+            <div class="controls">
+              <button type="button" id="register-camera-toggle" class="btn btn-outline">Ativar câmera</button>
+              <button type="button" id="register-capture-btn" class="btn btn-outline" disabled>Capturar</button>
+              <label class="btn btn-outline file-btn">
+                Enviar arquivo
+                <input type="file" id="register-file" accept="image/*" hidden />
+              </label>
+            </div>
+
+            <label class="consent">
+              <input type="checkbox" id="consentimento" />
+              <span>Autorizo o uso do meu dado biométrico (embedding facial) para fins de identificação, conforme a LGPD.</span>
+            </label>
+
+            <button type="submit" class="btn btn-primary btn-block" id="register-submit" disabled>
+              Cadastrar
+            </button>
+            <p id="register-status" class="status" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+      </div>
+
+      <div id="result" class="result hidden">
+        <div class="result-icon" id="result-icon">&#128100;</div>
+        <h3 id="result-title"></h3>
+        <p id="result-body"></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="privacidade" class="section section-privacy">
+    <div class="container">
+      <h2 class="section-title">Privacidade em primeiro lugar</h2>
+      <div class="privacy-cards">
+        <div class="privacy-card">
+          <h3>&#128274; Nenhuma foto é salva</h3>
+          <p>A imagem original é processada em memória e descartada. Guardamos apenas um vetor de 128 números que representa o rosto.</p>
+        </div>
+        <div class="privacy-card">
+          <h3>&#9989; Seus dados, seus direitos</h3>
+          <p>Você pode solicitar a exclusão do seu cadastro a qualquer momento (direito de exclusão previsto na LGPD).</p>
+        </div>
+        <div class="privacy-card">
+          <h3>&#9888;&#65039; Consentimento explícito</h3>
+          <p>O cadastro só é concluído com a sua autorização explícita para o uso do dado biométrico.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>Identificador — demonstração de reconhecimento facial com privacidade.</p>
+      <p class="muted">Apenas embeddings são armazenados. Nenhuma foto é mantida.</p>
+    </div>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

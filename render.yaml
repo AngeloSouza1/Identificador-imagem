@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: identificador-imagem
+    runtime: docker
+    plan: starter        # disco persistente exige plano pago
+    healthCheckPath: /
+    envVars:
+      - key: DB_PATH
+        value: /data/database.sqlite
+    disk:
+      name: data
+      mountPath: /data
+      sizeGB: 1
