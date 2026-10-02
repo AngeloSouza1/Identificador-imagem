@@ -53,6 +53,7 @@
 
   function friendlyError(detail) {
     const text = typeof detail === "string" ? detail : "Erro inesperado.";
+    if (/senha de administrador|ADMIN_PASSWORD/i.test(text)) return text;
     if (/nenhum rosto/i.test(text)) return "Nenhum rosto detectado. Tente uma foto com melhor iluminação.";
     if (/mais de um rosto/i.test(text)) return "Mais de um rosto detectado. Envie uma foto com apenas uma pessoa.";
     if (/inválida|invalido|imagem/i.test(text)) return "Imagem inválida ou formato não suportado.";
@@ -166,7 +167,9 @@
 
     function isReady() {
       if (tabKey === "identify") return Boolean(stream || capturedBlob);
-      return Boolean(capturedBlob && consent.checked && nome.value.trim().length > 0);
+      return Boolean(
+        capturedBlob && consent.checked && nome.value.trim().length > 0 && adminPassword.value
+      );
     }
 
     // Na aba "identify", com a câmera ligada, tira a foto na hora do envio.
@@ -184,11 +187,13 @@
   // ---- Register extras (name + consent) ----
   const nome = document.getElementById("nome");
   const consent = document.getElementById("consentimento");
+  const adminPassword = document.getElementById("admin-password");
   const registerSubmit = document.getElementById("register-submit");
   const identifySubmit = document.getElementById("identify-submit");
 
   nome.addEventListener("input", () => registerCapture.updateReadyState());
   consent.addEventListener("change", () => registerCapture.updateReadyState());
+  adminPassword.addEventListener("input", () => registerCapture.updateReadyState());
 
   // ---- Forms ----
   const identifyForm = document.getElementById("identify-form");
@@ -219,6 +224,10 @@
     }
     if (!nome.value.trim()) {
       setStatus(registerStatus, "Informe um nome.", "error");
+      return;
+    }
+    if (!adminPassword.value) {
+      setStatus(registerStatus, "Informe a senha de administrador.", "error");
       return;
     }
     await submitRegister(blob);
@@ -258,7 +267,11 @@
       form.append("nome", nome.value.trim());
       form.append("consentimento", "true");
       form.append("imagem", blob, "foto.jpg");
-      const res = await fetch("/api/register", { method: "POST", body: form });
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "X-Admin-Password": adminPassword.value },
+        body: form,
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Erro ao cadastrar.");
       showResult({ success: true, title: "Cadastro realizado", body: `${data.nome} foi cadastrado com sucesso.` });

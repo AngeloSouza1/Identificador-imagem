@@ -5,6 +5,8 @@ services:
     plan: starter        # disco persistente exige plano pago
     healthCheckPath: /
     envVars:
+      - key: ADMIN_PASSWORD
+        generateValue: true   # veja o valor em Environment no painel do Render
       - key: DB_PATH
         value: /data/database.sqlite
     disk:

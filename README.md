@@ -144,3 +144,23 @@ Identificador-imagem/
 ├── requirements.txt
 └── README.md
 ```
+
+## Área administrativa (senha)
+
+Cadastro, listagem e remoção exigem a variável de ambiente `ADMIN_PASSWORD`
+e o cabeçalho `X-Admin-Password`. Sem a variável definida, essas rotas ficam
+bloqueadas (503). A identificação (`POST /api/identify`) continua pública.
+
+```bash
+ADMIN_PASSWORD='sua-senha' uvicorn app.main:app
+
+# listar e remover cadastros
+curl -H "X-Admin-Password: sua-senha" http://localhost:8000/api/users
+curl -X DELETE -H "X-Admin-Password: sua-senha" http://localhost:8000/api/users/1
+```
+
+## Deploy (Render)
+
+O `render.yaml` cria o serviço Docker com disco persistente em `/data` e gera
+uma `ADMIN_PASSWORD` aleatória (veja em *Environment* no painel). O disco
+persistente exige plano pago.

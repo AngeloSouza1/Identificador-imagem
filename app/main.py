@@ -1,6 +1,8 @@
+import hmac
+import os
 from pathlib import Path
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -21,6 +23,18 @@ STATIC_DIR = BASE_DIR / "static"
 app = FastAPI(title="Identificador de Imagem", version="1.0.0")
 
 
+def require_admin(x_admin_password: str = Header(default="")) -> None:
+    """Protege cadastro e remoção. Sem ADMIN_PASSWORD definida, bloqueia tudo."""
+    expected = os.environ.get("ADMIN_PASSWORD", "")
+    if not expected:
+        raise HTTPException(
+            status_code=503,
+            detail="Área administrativa desativada: defina a variável ADMIN_PASSWORD.",
+        )
+    if not hmac.compare_digest(x_admin_password.encode(), expected.encode()):
+        raise HTTPException(status_code=401, detail="Senha de administrador incorreta.")
+
+
 @app.on_event("startup")
 def on_startup() -> None:
     db.init_db()
@@ -31,7 +45,7 @@ async def index() -> FileResponse:
     return FileResponse(STATIC_DIR / "index.html")
 
 
-@app.post("/api/register")
+@app.post("/api/register", dependencies=[Depends(require_admin)])
 async def register(
     nome: str = Form(...),
     consentimento: str = Form(...),
@@ -96,7 +110,15 @@ async def identify(imagem: UploadFile = File(...)):
     }
 
 
-@app.delete("/api/users/{user_id}")
+@app.get("/api/users", dependencies=[Depends(require_admin)])
+async def list_users():
+    return [
+        {"id": u["id"], "nome": u["nome"], "criado_em": u["criado_em"]}
+        for u in db.get_all_users()
+    ]
+
+
+@app.delete("/api/users/{user_id}", dependencies=[Depends(require_admin)])
 async def delete_user(user_id: int):
     if not db.delete_user(user_id):
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")
